@@ -10,7 +10,7 @@ using namespace std;
 
 int main() {
 	new global();
-	//Sleep(2000);
+	Sleep(2000);
 	//Globals::mt_rand(time(0));
 	Boundry::createBoundry();
 	Utility::getUtilityObj();
