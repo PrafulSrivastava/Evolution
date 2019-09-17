@@ -64,17 +64,31 @@ bool Organism::isInView(int x,int y) {
 		return false;
 }
 
-COORD Organism::foodFound() {
+COORD Organism::foodFound(int &x) {
 	for (int i=0;i<FOOD_QUANTITY;i++)
 	{
 		if (Food::foodPos.find(i)->second->state) {
 			if (this->isInView(Food::foodPos.find(i)->second->xPos, Food::foodPos.find(i)->second->yPos)) {
 				//cout << "Found at : " << Food::foodPos.find(i)->second->xPos << " , " << Food::foodPos.find(i)->second->yPos << endl;
-				Food::foodPos.find(i)->second->state = false;
-				this->foundFood = true;
+				x = i;
 				return { (short)Food::foodPos.find(i)->second->xPos,(short)Food::foodPos.find(i)->second->yPos };
 			}
 		}
 	}
 	return { (short)-999,(short)-999};
+}
+
+bool Organism::isOrganismPosition(int x,int y) {
+	for (int i = 0; i < ORGANISM_COUNT; i++) {
+		if ((org[i]->homeX == x) && (org[i]->homeY == y)) {
+			return org[i]->isHome();
+		}
+	}
+	return false;
+}
+
+bool Organism::isHome() {
+	if ((this->xPos == this->homeX) && (this->yPos == this->homeY))
+		return true;
+	return false;
 }

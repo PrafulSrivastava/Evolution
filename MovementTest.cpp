@@ -16,6 +16,10 @@ int main() {
 	Utility::getUtilityObj();
 	//cout << "Boundry done!\n";
 	Food::genFood();
+	std::map<int, fInfo*>::iterator i;
+	for (i = Food::foodPos.begin(); i != Food::foodPos.end(); i++) {
+		cout << " : " << i->second->xPos << " , " << i->second->yPos << endl;
+	}
 	Organism::spawnOrganisms();
 	//cout << "Organism done!\n";
 	CustomThreads* ct = new CustomThreads();

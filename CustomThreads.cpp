@@ -26,7 +26,8 @@ DWORD CustomThreads::init(LPVOID param) {
 
 	thread_id* tid = (thread_id*)param;
 	while (true) {
-		
+		while (Organism::org[tid->id]->foundFood);
+		int a = 0;
 		mtx.lock();
 		Movement::move(*Organism::org[tid->id]);
 		mtx.unlock();

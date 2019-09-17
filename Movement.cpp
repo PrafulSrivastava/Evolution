@@ -5,6 +5,7 @@
 #include <cstring>
 #include <math.h>
 #include "Global.h"
+#include "Food.h"
 
 using namespace std;
 
@@ -47,47 +48,55 @@ int Movement::setDirection(Organism &o) {
 	o.direction = Utility::getUtilityObj()->randomInRange(1, 4);
 	return 0;
 }
-void Movement::displayLogic(int timeSpan, Organism &o) {
-	int c = 0;
+int Movement::displayLogic(int timeSpan, Organism &o) {
+	int foodOrder = 1000;
 	for (int i = 0; i < timeSpan; i++) {
 		if (!o.forced) {
-			COORD tempC = o.foodFound();
+			COORD tempC = o.foodFound(foodOrder);
 
-			if (tempC.X != -999) {
+			if (foodOrder < FOOD_QUANTITY) {
 				//cout << "temp: " << tempC.X << " , " << tempC.Y << endl;
+				//cout << "Forced ? " << o.forced << endl;
 				o.forced = 1;
+				//cout << "Forced now? " << o.forced << endl;
 				gotoDestination(o, tempC.X, tempC.Y);
+				//cout << "Forced huh? " << o.forced << endl;
+				//cout << "Current pos: " << o.xPos << " , " << o.yPos << endl;
+				if (Food::isFoodPosition(o.xPos, o.yPos)) {
+					//cout << "Food? " << o.foundFood <<" Position : "<< foodOrder << endl;
+					Food::foodPos.find(foodOrder)->second->state = false;
+					o.foundFood = true;
+				}
 				if (o.foundFood) {
+					//cout << "Steps: " << o.steps << endl;
+					o.steps = 0;
 					o.forced = 1;
 					gotoDestination(o, o.homeX, o.homeY);
-					o.foundFood = false;
+					return 1;
 				}
 				
 			}
 		}
 		
-		switch (o.direction) {
-		case 1:
-			c++;
-			break;
-		case 2:
-			c--;
-			break;
-		case 3:
-			c--;
-			break;
-		case 4:
-			c++;
-			break;
-
-		}
 		string temp = "";
 		if (Boundry::isBoundry(o.xPos, o.yPos)) {
-			if (o.xPos == 0 || o.xPos == BREADTH)
-				temp += BOUNDRY_SYMBOL_V;
-			else {
-				temp += BOUNDRY_SYMBOL_H;
+			if (o.xPos == 0 || o.xPos == BREADTH) {
+				if (o.steps && Organism::isOrganismPosition(o.xPos, o.yPos)) {
+					temp += o.organismType;
+				}
+				else
+					temp += BOUNDRY_SYMBOL_V;
 			}
+			else {
+				if (o.steps && Organism::isOrganismPosition(o.xPos, o.yPos)) {
+					temp += o.organismType;
+				}
+				else
+					temp += BOUNDRY_SYMBOL_H;
+			}
+		}
+		else if (o.steps  && o.foundFood && Food::isFoodPosition(o.xPos, o.yPos)) {
+			temp += FOOD_ITEM;
 		}
 		else
 			temp += " ";
@@ -98,13 +107,13 @@ void Movement::displayLogic(int timeSpan, Organism &o) {
 		Sleep(TIMELAG);
 		o.steps++;
 	}
-	
+	return 0;
 	//cout << "Current pos: " << o.xPos << " , " << o.yPos << endl;
 }
-void Movement:: move(Organism &o) {
+int Movement:: move(Organism &o) {
 	if (o.steps != 0) {
-		if (o.homeX == o.xPos && o.homeY == o.yPos) {
-
+		if (o.isHome()) {
+			return 1;
 		}
 	}
 	
@@ -115,7 +124,7 @@ void Movement:: move(Organism &o) {
 		int timeSpan = Utility::getUtilityObj()->randomInRange(MIN_STEPS, MAX_STEPS);
 		displayLogic(timeSpan,o);
 	}
-	
+	return 0;
 }
 void Movement::movementLogic(Organism &o) {
 	//std::cout << "X: " << o.xPos << " Y : " << o.yPos << std::endl;

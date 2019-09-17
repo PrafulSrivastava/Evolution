@@ -17,12 +17,12 @@ public: Organism();
 		const char * organismType;
 		int steps;
 		static Organism ** org;
-		COORD foodFound();
+		COORD foodFound(int &x);
 		bool enemyFound();
 		void displayStats();
 		bool isInView(int x,int y);
-
-		
+		bool isHome();
+		static bool isOrganismPosition(int x, int y);
 		static void spawnOrganisms();
 		static const char * chooseOrganism();
 		

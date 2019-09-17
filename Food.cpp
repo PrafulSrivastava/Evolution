@@ -3,7 +3,6 @@
 #include "Global.h"
 #include "Utility.h"
 
-typedef std::map<Food*, bool> innerMap;
 std::map<int, fInfo*> Food::foodPos;
 //Food** Food::foodPos = NULL;
 void Food::genFood() {
@@ -28,4 +27,22 @@ void Food::displayFoodPos() {
 	for (int i = 0; i < FOOD_QUANTITY; i++) {
 		std::cout << foodPos.find(i)->second->xPos << " , " << foodPos.find(i)->second->yPos << std::endl;
 	}
+}
+
+int Food::compareFInfo(fInfo *f1, int x,int y) {
+	if ((f1->xPos == x) && (f1->yPos == y)) {
+		return 0;//equality
+	}
+	return 1;
+}
+
+bool Food::isFoodPosition(int x, int y) {
+	std::map<int, fInfo*>::iterator i;
+	for (i = foodPos.begin(); i != foodPos.end(); i++) {
+		if (i->second->state) {
+			if (!compareFInfo(i->second, x, y))
+				return true;
+		}
+	}
+	return false;
 }
