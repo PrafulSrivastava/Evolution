@@ -5,7 +5,7 @@
 #include "Global.h"
 void CustomThreads::createThreads() {
 
-	for (int i = 0; i < MAX_THREADS; i++) {
+	for (int i = 0; i <= MAX_THREADS; i++) {
 		t_id[i] = new thread_id();
 		t_id[i]->id = i;
 		hThreads[i] = CreateThread(NULL, 0, init, t_id[i], 0, &threadID[i]);
@@ -13,7 +13,7 @@ void CustomThreads::createThreads() {
 }
 void CustomThreads::destroyThreads(){
 	
-	for (int i = 0; i < MAX_THREADS; i++) {
+	for (int i = 0; i <= MAX_THREADS; i++) {
 		CloseHandle(hThreads[i]);
 		if (t_id[i] != NULL) {
 			delete t_id[i];
@@ -22,16 +22,63 @@ void CustomThreads::destroyThreads(){
 	}
 }
 
+bool CustomThreads::unleash() {
+	return true;
+}
+
 DWORD CustomThreads::init(LPVOID param) {
-
+	
 	thread_id* tid = (thread_id*)param;
-	while (true) {
-		while (Organism::org[tid->id]->foundFood);
-		int a = 0;
-		mtx.lock();
-		Movement::move(*Organism::org[tid->id]);
-		mtx.unlock();
+	if (tid->id != MAX_THREADS) {
+		while (Organism::org.find(tid->id)->second->deadOrAlive) {
+			cout << " -> " << Organism::org.find(tid->id)->second->foundFood;
+			
+			mtx.lock();
 
-		Sleep(100);
+			if (Movement::move(*Organism::org.find(tid->id)->second)) {
+				cout << "Out of Energy\n";
+				Organism::org.erase(tid->id);
+				mtx.unlock();
+				break;
+			}
+			else
+				mtx.unlock();
+			if (Organism::org.find(tid->id)->second->foundFood && Organism::org.find(tid->id)->second->isHome()) {
+				cout << "Wait!\n";
+				std::unique_lock<std::mutex> lk(m);
+
+				cv.wait(lk);
+				cout << "Restart!\n";
+				lk.release();
+			}
+			
+			
+			Sleep(100);
+
+
+		}
 	}
+	else {
+		while (true) {
+			int cnt = 0;
+			std::map<int, Organism*>::iterator i;
+			for (i = Organism::org.begin(); i != Organism::org.end(); i++) {
+				if (i->second->foundFood || !i->second->deadOrAlive) {
+					cnt++;
+				}
+			}
+			//cout << "Count : " << cnt << endl;
+			if (cnt == Organism::org.size()) {
+				cout << "Reset!\n";
+				Sleep(1000);
+				Organism::resetStates();
+				cv.notify_all();
+				
+			}
+			if (!Organism::org.size())
+				break;
+		}
+	}
+	
+	return 0;
 }

@@ -6,15 +6,16 @@
 
 using namespace std;
 
-Organism** Organism::org = NULL;
+std::map<int, Organism*> Organism::org;
 
 Organism::Organism() {
 	strength = Utility::getUtilityObj()->randomInRange(2,10); //(10 + 1 - 2)
 	sense = Utility::getUtilityObj()->randomInRange(3, 10); //(10 + 1 - 3)
-	energy = Utility::getUtilityObj()->randomInRange(5, 10); //(10 + 1 -5)
+	energy = Utility::getUtilityObj()->randomInRange(15, 30); //(10 + 1 -5)
 	direction = 0;
 	forced = 0;
 	foundFood = false;
+	deadOrAlive = true;//alive
 }
 
 void Organism::displayStats() {
@@ -37,7 +38,6 @@ const char* Organism::chooseOrganism() {
 	}
 }
 void Organism::spawnOrganisms() {
-	org = new Organism*[ORGANISM_COUNT];
 	int pos = 0;
 	while (pos < ORGANISM_COUNT) {
 
@@ -50,7 +50,7 @@ void Organism::spawnOrganisms() {
 		temp->homeY = c->Y;
 		temp->organismType = chooseOrganism();
 		Utility::getUtilityObj()->spawn(temp->organismType, *c);
-		org[pos] = temp;
+		org.insert(pair<int,Organism*>(pos, temp));
 		pos++;
 	}
 }
@@ -79,9 +79,10 @@ COORD Organism::foodFound(int &x) {
 }
 
 bool Organism::isOrganismPosition(int x,int y) {
-	for (int i = 0; i < ORGANISM_COUNT; i++) {
-		if ((org[i]->homeX == x) && (org[i]->homeY == y)) {
-			return org[i]->isHome();
+	std::map<int, Organism*>::iterator i;
+	for (i=org.begin(); i != org.end(); i++) {
+		if ((i->second->homeX == x) && (i->second->homeY == y)) {
+			return i->second->isHome();
 		}
 	}
 	return false;
@@ -91,4 +92,12 @@ bool Organism::isHome() {
 	if ((this->xPos == this->homeX) && (this->yPos == this->homeY))
 		return true;
 	return false;
+}
+
+void Organism::resetStates() {
+	std::map<int, Organism*>::iterator i;
+	for (i = Organism::org.begin(); i != Organism::org.end(); i++) {
+		i->second->foundFood = false;
+		
+	}
 }

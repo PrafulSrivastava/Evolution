@@ -8,6 +8,7 @@ typedef struct Data {
 class CustomThreads {
 
 public:
+	 bool unleash();
 	HANDLE hThreads[MAX_THREADS];
 	DWORD threadID[MAX_THREADS];
 	thread_id* t_id[MAX_THREADS];

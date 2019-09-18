@@ -50,25 +50,18 @@ int Movement::setDirection(Organism &o) {
 }
 int Movement::displayLogic(int timeSpan, Organism &o) {
 	int foodOrder = 1000;
-	for (int i = 0; i < timeSpan; i++) {
+	for (int i = 0; ((i < timeSpan) && ( o.energy > 0 )); i++) {
 		if (!o.forced) {
 			COORD tempC = o.foodFound(foodOrder);
 
 			if (foodOrder < FOOD_QUANTITY) {
-				//cout << "temp: " << tempC.X << " , " << tempC.Y << endl;
-				//cout << "Forced ? " << o.forced << endl;
 				o.forced = 1;
-				//cout << "Forced now? " << o.forced << endl;
 				gotoDestination(o, tempC.X, tempC.Y);
-				//cout << "Forced huh? " << o.forced << endl;
-				//cout << "Current pos: " << o.xPos << " , " << o.yPos << endl;
 				if (Food::isFoodPosition(o.xPos, o.yPos)) {
-					//cout << "Food? " << o.foundFood <<" Position : "<< foodOrder << endl;
 					Food::foodPos.find(foodOrder)->second->state = false;
 					o.foundFood = true;
 				}
 				if (o.foundFood) {
-					//cout << "Steps: " << o.steps << endl;
 					o.steps = 0;
 					o.forced = 1;
 					gotoDestination(o, o.homeX, o.homeY);
@@ -81,14 +74,14 @@ int Movement::displayLogic(int timeSpan, Organism &o) {
 		string temp = "";
 		if (Boundry::isBoundry(o.xPos, o.yPos)) {
 			if (o.xPos == 0 || o.xPos == BREADTH) {
-				if (o.steps && Organism::isOrganismPosition(o.xPos, o.yPos)) {
+				if (o.deadOrAlive && o.steps && Organism::isOrganismPosition(o.xPos, o.yPos)) {
 					temp += o.organismType;
 				}
 				else
 					temp += BOUNDRY_SYMBOL_V;
 			}
 			else {
-				if (o.steps && Organism::isOrganismPosition(o.xPos, o.yPos)) {
+				if (o.deadOrAlive && o.steps && Organism::isOrganismPosition(o.xPos, o.yPos)) {
 					temp += o.organismType;
 				}
 				else
@@ -103,9 +96,19 @@ int Movement::displayLogic(int timeSpan, Organism &o) {
 
 		Utility::getUtilityObj()->spawn(temp.c_str(), { (short)o.xPos,  (short)o.yPos });//print
 		movementLogic(o);
-		Utility::getUtilityObj()->spawn(o.organismType, { (short)o.xPos,  (short)o.yPos });//print
+		if(o.energy - ENERGY_LOSS < 0.1)
+			Utility::getUtilityObj()->spawn(DEAD_MEAT, { (short)o.xPos,  (short)o.yPos });//print
+		else
+			Utility::getUtilityObj()->spawn(o.organismType, { (short)o.xPos,  (short)o.yPos });
 		Sleep(TIMELAG);
 		o.steps++;
+		o.energy = o.energy - ENERGY_LOSS;
+		if (o.energy < 0.1) {
+			o.energy = 0;
+			o.deadOrAlive = false;
+		}
+		//cout << " " << o.energy;
+			
 	}
 	return 0;
 	//cout << "Current pos: " << o.xPos << " , " << o.yPos << endl;
@@ -113,7 +116,10 @@ int Movement::displayLogic(int timeSpan, Organism &o) {
 int Movement:: move(Organism &o) {
 	if (o.steps != 0) {
 		if (o.isHome()) {
-			return 1;
+			return 0;
+		}
+		if (!o.deadOrAlive) {
+			return 1;//dead
 		}
 	}
 	
