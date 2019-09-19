@@ -97,7 +97,7 @@ bool Organism::isHome() {
 void Organism::resetStates() {
 	std::map<int, Organism*>::iterator i;
 	for (i = org.begin(); i != org.end(); i++) {
-		cout << "Resetting : " << i->second->organismType;
+		//cout << "Resetting : " << i->second->organismType;
 		i->second->foundFood = false;
 		i->second->energy = i->second->energy + FOOD_GAIN;//(10 + 1 -5)
 		i->second->steps = 0;

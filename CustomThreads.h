@@ -9,11 +9,11 @@ class CustomThreads {
 
 public:
 	 bool unleash();
-	HANDLE hThreads[MAX_THREADS];
-	DWORD threadID[MAX_THREADS];
-	thread_id* t_id[MAX_THREADS];
+	static HANDLE hThreads[MAX_THREADS];
+	static DWORD threadID[MAX_THREADS];
+	static thread_id* t_id[MAX_THREADS];
 	static DWORD init(LPVOID param);
-	void createThreads();
-	void destroyThread(thread_id* t);
+	static void createThreads();
+	static void destroyThread(int t);
 
 };

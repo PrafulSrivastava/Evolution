@@ -3,21 +3,30 @@
 #include "Movement.h"
 #include <iostream>
 #include "Global.h"
+
+HANDLE CustomThreads::hThreads[MAX_THREADS] = {};
+DWORD CustomThreads::threadID[MAX_THREADS] = {};
+thread_id* CustomThreads::t_id[MAX_THREADS] = {};
+
 void CustomThreads::createThreads() {
 
-	for (int i = 0; i <= MAX_THREADS; i++) {
+	for (int i = 0; i < MAX_THREADS; i++) {
+		
 		t_id[i] = new thread_id();
 		t_id[i]->id = i;
 		hThreads[i] = CreateThread(NULL, 0, init, t_id[i], 0, &threadID[i]);
+		//cout << " " << hThreads[i];
 	}
 }
-void CustomThreads::destroyThread(thread_id* t){
+void CustomThreads::destroyThread(int t){
 	
-	cout << "Destroying! \n";
-	CloseHandle(t);
-	if (t != NULL) {
-		delete t;
-		t = NULL;
+	//cout << "Destroying! \n";
+	CloseHandle(hThreads[t]);
+	if (t == MAX_THREADS) {
+		for (int i = 0; i <= MAX_THREADS; i++) {
+			delete t_id[i];
+		}
+		delete[] t_id;
 	}
 	
 }
@@ -27,9 +36,9 @@ bool CustomThreads::unleash() {
 }
 
 DWORD CustomThreads::init(LPVOID param) {
-	CustomThreads *cts = new CustomThreads();
+	
 	thread_id* tid = (thread_id*)param;
-	if (tid->id != MAX_THREADS) {
+	if (tid->id != MAX_THREADS-1) {
 		while (Organism::org.find(tid->id)->second->deadOrAlive) {
 			mtx.lock();
 			//cout << " -> " << Organism::org.find(tid->id)->second->energy;
@@ -41,19 +50,19 @@ DWORD CustomThreads::init(LPVOID param) {
 				//cout << " is waiting..!\n";
 				std::unique_lock<std::mutex> lk(m);
 				cv.wait(lk);
-				cout << "Restart!\n";
+				//cout << "Restart!\n";
 			}
 			if (!Organism::org.find(tid->id)->second->deadOrAlive) {
 				Organism::org.erase(tid->id);
-				cout << "Died. New Size: " << Organism::org.size() << endl;
-				cts->destroyThread(cts->t_id[tid->id]);
+				//cout << "Died. New Size: " << Organism::org.size() << endl;
+				destroyThread(tid->id);
 				break;
 			}
 			Sleep(100);
 		}
 	}
-	else {
-		cout << "Size: " << Organism::org.size() << endl;
+	else {//1 special thread to signal conditon variable 
+		//cout << "Size: " << Organism::org.size() << endl;
 		while (true) {
 			int cnt = 0;
 			std::map<int, Organism*>::iterator i;
@@ -62,19 +71,16 @@ DWORD CustomThreads::init(LPVOID param) {
 					cnt++;
 				}
 			}
-			Sleep(3000);
-			cout << "Count : " << cnt <<" ";
+			Sleep(RESET_TIME_DELAY);
+			//cout << "Count : " << cnt <<" ";
 			if (cnt == Organism::org.size()) {
-				cout << "Reset !\n";
-				
+				//cout << "Reset !\n";
 				Organism::resetStates();
 				cv.notify_all();
-				
 			}
-
 			if (!Organism::org.size()) {
-				cout << "Size 0\n";
-				cts->destroyThread(cts->t_id[MAX_THREADS]);
+				//cout << "Size 0\n";
+				destroyThread(MAX_THREADS-1);
 				break;
 			}
 		}

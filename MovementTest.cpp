@@ -26,7 +26,7 @@ int main() {
 	ct->createThreads();
 	WaitForMultipleObjects(MAX_THREADS, ct->hThreads, TRUE, INFINITE);
 
-
+	cout << "Done!\n";
 			
 	int t;
 	std::cin >> t;
