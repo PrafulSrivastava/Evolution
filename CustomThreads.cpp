@@ -11,15 +11,15 @@ void CustomThreads::createThreads() {
 		hThreads[i] = CreateThread(NULL, 0, init, t_id[i], 0, &threadID[i]);
 	}
 }
-void CustomThreads::destroyThreads(){
+void CustomThreads::destroyThread(thread_id* t){
 	
-	for (int i = 0; i <= MAX_THREADS; i++) {
-		CloseHandle(hThreads[i]);
-		if (t_id[i] != NULL) {
-			delete t_id[i];
-			t_id[i] = NULL;
-		}
+	cout << "Destroying! \n";
+	CloseHandle(t);
+	if (t != NULL) {
+		delete t;
+		t = NULL;
 	}
+	
 }
 
 bool CustomThreads::unleash() {
@@ -27,58 +27,59 @@ bool CustomThreads::unleash() {
 }
 
 DWORD CustomThreads::init(LPVOID param) {
-	
+	CustomThreads *cts = new CustomThreads();
 	thread_id* tid = (thread_id*)param;
 	if (tid->id != MAX_THREADS) {
 		while (Organism::org.find(tid->id)->second->deadOrAlive) {
-			cout << " -> " << Organism::org.find(tid->id)->second->foundFood;
-			
 			mtx.lock();
-
-			if (Movement::move(*Organism::org.find(tid->id)->second)) {
-				cout << "Out of Energy\n";
-				Organism::org.erase(tid->id);
-				mtx.unlock();
-				break;
-			}
-			else
-				mtx.unlock();
+			//cout << " -> " << Organism::org.find(tid->id)->second->energy;
+			int res = Movement::move(*Organism::org.find(tid->id)->second);
+			mtx.unlock();
 			if (Organism::org.find(tid->id)->second->foundFood && Organism::org.find(tid->id)->second->isHome()) {
-				cout << "Wait!\n";
+				//cout << "\n";
+				//Organism::org.find(tid->id)->second->displayStats();
+				//cout << " is waiting..!\n";
 				std::unique_lock<std::mutex> lk(m);
-
 				cv.wait(lk);
 				cout << "Restart!\n";
-				lk.release();
 			}
-			
-			
+			if (!Organism::org.find(tid->id)->second->deadOrAlive) {
+				Organism::org.erase(tid->id);
+				cout << "Died. New Size: " << Organism::org.size() << endl;
+				cts->destroyThread(cts->t_id[tid->id]);
+				break;
+			}
 			Sleep(100);
-
-
 		}
 	}
 	else {
+		cout << "Size: " << Organism::org.size() << endl;
 		while (true) {
 			int cnt = 0;
 			std::map<int, Organism*>::iterator i;
 			for (i = Organism::org.begin(); i != Organism::org.end(); i++) {
-				if (i->second->foundFood || !i->second->deadOrAlive) {
+				if (i->second->foundFood) {
 					cnt++;
 				}
 			}
-			//cout << "Count : " << cnt << endl;
+			Sleep(3000);
+			cout << "Count : " << cnt <<" ";
 			if (cnt == Organism::org.size()) {
-				cout << "Reset!\n";
-				Sleep(1000);
+				cout << "Reset !\n";
+				
 				Organism::resetStates();
 				cv.notify_all();
 				
 			}
-			if (!Organism::org.size())
+
+			if (!Organism::org.size()) {
+				cout << "Size 0\n";
+				cts->destroyThread(cts->t_id[MAX_THREADS]);
 				break;
+			}
 		}
 	}
+	
 	
 	return 0;
 }

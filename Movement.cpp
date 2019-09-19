@@ -49,8 +49,8 @@ int Movement::setDirection(Organism &o) {
 	return 0;
 }
 int Movement::displayLogic(int timeSpan, Organism &o) {
-	int foodOrder = 1000;
-	for (int i = 0; ((i < timeSpan) && ( o.energy > 0 )); i++) {
+	int foodOrder = 1000;//temporary holder to store food location
+	for (int i = 0; ((i < timeSpan) && ( o.deadOrAlive )); i++) {
 		if (!o.forced) {
 			COORD tempC = o.foodFound(foodOrder);
 
@@ -105,7 +105,7 @@ int Movement::displayLogic(int timeSpan, Organism &o) {
 		o.energy = o.energy - ENERGY_LOSS;
 		if (o.energy < 0.1) {
 			o.energy = 0;
-			o.deadOrAlive = false;
+			o.deadOrAlive = false; //mf died
 		}
 		//cout << " " << o.energy;
 			
@@ -117,9 +117,6 @@ int Movement:: move(Organism &o) {
 	if (o.steps != 0) {
 		if (o.isHome()) {
 			return 0;
-		}
-		if (!o.deadOrAlive) {
-			return 1;//dead
 		}
 	}
 	

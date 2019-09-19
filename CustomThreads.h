@@ -14,6 +14,6 @@ public:
 	thread_id* t_id[MAX_THREADS];
 	static DWORD init(LPVOID param);
 	void createThreads();
-	void destroyThreads();
+	void destroyThread(thread_id* t);
 
 };

@@ -9,9 +9,9 @@ using namespace std;
 std::map<int, Organism*> Organism::org;
 
 Organism::Organism() {
-	strength = Utility::getUtilityObj()->randomInRange(2,10); //(10 + 1 - 2)
-	sense = Utility::getUtilityObj()->randomInRange(3, 10); //(10 + 1 - 3)
-	energy = Utility::getUtilityObj()->randomInRange(15, 30); //(10 + 1 -5)
+	strength = Utility::getUtilityObj()->randomInRange(MIN_STRENGTH, MIN_STRENGTH); //(10 + 1 - 2)
+	sense = Utility::getUtilityObj()->randomInRange(MIN_SENSE, MAX_SENSE); //(10 + 1 - 3)
+	energy = Utility::getUtilityObj()->randomInRange(MIN_ENERGY, MAX_ENERGY); //(10 + 1 -5)
 	direction = 0;
 	forced = 0;
 	foundFood = false;
@@ -19,7 +19,7 @@ Organism::Organism() {
 }
 
 void Organism::displayStats() {
-	cout << "Strength : " << this->strength << " Sense : " << this->sense << " Energy : " << this->energy << endl;
+	cout <<" Type : " << this->organismType<<" Strength : " << this->strength << " Sense : " << this->sense << " Energy : " << this->energy <<" DeadOrAlive : "<<this->deadOrAlive<<" IsHome? : "<<this->isHome()<<" Food? : "<<this->foundFood<< endl;
 }
 const char* Organism::chooseOrganism() {
 	//(4 + 1 - 1)
@@ -96,8 +96,11 @@ bool Organism::isHome() {
 
 void Organism::resetStates() {
 	std::map<int, Organism*>::iterator i;
-	for (i = Organism::org.begin(); i != Organism::org.end(); i++) {
+	for (i = org.begin(); i != org.end(); i++) {
+		cout << "Resetting : " << i->second->organismType;
 		i->second->foundFood = false;
-		
+		i->second->energy = i->second->energy + FOOD_GAIN;//(10 + 1 -5)
+		i->second->steps = 0;
+		cout << endl;
 	}
 }

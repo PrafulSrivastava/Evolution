@@ -25,7 +25,7 @@ int main() {
 	CustomThreads* ct = new CustomThreads();
 	ct->createThreads();
 	WaitForMultipleObjects(MAX_THREADS, ct->hThreads, TRUE, INFINITE);
-	ct->destroyThreads();
+
 
 			
 	int t;
