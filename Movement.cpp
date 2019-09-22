@@ -53,7 +53,12 @@ int Movement::displayLogic(int timeSpan, Organism &o) {
 	for (int i = 0; ((i < timeSpan) && ( o.deadOrAlive )); i++) {
 		if (!o.forced) {
 			COORD tempC = o.foodFound(foodOrder);
-
+			int pp = ORGANISM_COUNT + 1;
+			COORD enemyCor = o.enemyFound(pp);
+			if (pp < ORGANISM_COUNT) {
+				o.forced = 1;
+				gotoDestination(o, tempC.X, tempC.Y);
+			}
 			if (foodOrder < FOOD_QUANTITY) {
 				o.forced = 1;
 				gotoDestination(o, tempC.X, tempC.Y);

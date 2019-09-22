@@ -12,6 +12,7 @@ Organism::Organism() {
 	strength = Utility::getUtilityObj()->randomInRange(MIN_STRENGTH, MIN_STRENGTH); //(10 + 1 - 2)
 	sense = Utility::getUtilityObj()->randomInRange(MIN_SENSE, MAX_SENSE); //(10 + 1 - 3)
 	energy = Utility::getUtilityObj()->randomInRange(MIN_ENERGY, MAX_ENERGY); //(10 + 1 -5)
+	
 	direction = 0;
 	forced = 0;
 	foundFood = false;
@@ -50,6 +51,8 @@ void Organism::spawnOrganisms() {
 		temp->homeY = c->Y;
 		temp->organismType = chooseOrganism();
 		Utility::getUtilityObj()->spawn(temp->organismType, *c);
+		temp->uniqueID = reinterpret_cast<unsigned long>(&(*temp));
+		cout << "ID: " << temp->uniqueID << endl;
 		org.insert(pair<int,Organism*>(pos, temp));
 		pos++;
 	}
@@ -78,6 +81,23 @@ COORD Organism::foodFound(int &x) {
 	return { (short)-999,(short)-999};
 }
 
+COORD Organism::enemyFound(int &x) {
+	COORD temp;
+	std::map<int, Organism*>::iterator i;
+	for (i = org.begin(); i != org.end(); i++) {
+		if (i->second->uniqueID != this->uniqueID ) {
+			if (this->isInView(i->second->xPos, i->second->yPos)) {
+				x = i->first;
+				i->second->displayStats();
+				temp.X = (short)i->second->xPos;
+				temp.Y = (short)i->second->yPos;
+				return temp;
+			}
+		}
+	}
+	return { (short)-999,(short)-999 };
+}
+
 bool Organism::isOrganismPosition(int x,int y) {
 	std::map<int, Organism*>::iterator i;
 	for (i=org.begin(); i != org.end(); i++) {
@@ -101,6 +121,6 @@ void Organism::resetStates() {
 		i->second->foundFood = false;
 		i->second->energy = i->second->energy + FOOD_GAIN;//(10 + 1 -5)
 		i->second->steps = 0;
-		cout << endl;
+		//cout << endl;
 	}
 }
