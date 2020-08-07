@@ -12,7 +12,7 @@ public:
 	static HANDLE hThreads[MAX_THREADS];
 	static DWORD threadID[MAX_THREADS];
 	static thread_id* t_id[MAX_THREADS];
-	static DWORD init(LPVOID param);
+	static DWORD WINAPI init(LPVOID param);
 	static void createThreads();
 	static void destroyThread(int t);
 

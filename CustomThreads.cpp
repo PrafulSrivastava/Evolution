@@ -35,7 +35,7 @@ bool CustomThreads::unleash() {
 	return true;
 }
 
-DWORD CustomThreads::init(LPVOID param) {
+DWORD WINAPI CustomThreads::init(LPVOID param) {
 	
 	thread_id* tid = (thread_id*)param;
 	if (tid->id != MAX_THREADS-1) {
